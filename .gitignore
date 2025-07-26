@@ -1,1 +1,4 @@
 myvenv/
+logs/
+__pycache__/
+sample_corpus/

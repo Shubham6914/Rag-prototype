@@ -1,46 +1,42 @@
 from typing import List
 from loguru import logger
 
+
 class TextChunker:
-    """Handles text chunking with consideration for memory constraints"""
-    
-    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200):
+    def __init__(self, chunk_size: int = 500, chunk_overlap: int = 50):
+        """Initialize with smaller default chunks for better performance"""
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
     def chunk_text(self, text: str) -> List[str]:
-        """
-        Split text into chunks with overlap
-        Handles memory constraints for large documents
-        """
-        try:
-            chunks = []
-            start = 0
-            text_length = len(text)
-
-            while start < text_length:
-                end = start + self.chunk_size
-                
-                # Handle the last chunk
-                if end > text_length:
-                    end = text_length
-                
-                # Find the last complete sentence in chunk if possible
-                if end < text_length:
-                    end = self._find_sentence_boundary(text, end)
-                
-                # Add chunk to list
-                chunks.append(text[start:end])
-                
-                # Move start position considering overlap
-                start = end - self.chunk_overlap
-
-            logger.debug(f"Text chunked into {len(chunks)} segments")
+        """Simple and efficient chunking implementation"""
+        chunks = []
+        if not text:
             return chunks
 
-        except Exception as e:
-            logger.error(f"Error during text chunking: {str(e)}")
-            raise
+        # Simple sentence splitting
+        sentences = text.replace('\n', ' ').split('. ')
+        current_chunk = []
+        current_size = 0
+
+        for sentence in sentences:
+            sentence = sentence.strip() + '. '
+            sentence_size = len(sentence)
+
+            if current_size + sentence_size > self.chunk_size:
+                if current_chunk:
+                    chunks.append(''.join(current_chunk))
+                current_chunk = [sentence]
+                current_size = sentence_size
+            else:
+                current_chunk.append(sentence)
+                current_size += sentence_size
+
+        if current_chunk:
+            chunks.append(''.join(current_chunk))
+
+        logger.debug(f"Created {len(chunks)} chunks from text")
+        return chunks
 
     def _find_sentence_boundary(self, text: str, position: int) -> int:
         """Find the nearest sentence boundary after the given position"""
