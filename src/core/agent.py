@@ -23,7 +23,8 @@ class RAGAgent:
                 "text2text-generation",
                 model=model_name,
                 max_length=512,
-                # temperature=0.3
+                temperature=0.3,
+                do_sample=False,
             )
 
             logger.info("Model initialized successfully.")
@@ -32,13 +33,15 @@ class RAGAgent:
             raise
 
     def _format_prompt(self, query: str, context: List[Dict]) -> str:
-        context_text = "\n".join([f"{i+1}. {doc['text'].strip()}" for i, doc in enumerate(context)])
+        context_text = "\n\n---\n\n".join([f"Chunk {i+1}:\n{doc['text'].strip()}" for i, doc in enumerate(context)])
         return (
-            "You are an expert assistant. Use only the context below to answer the question.\n"
-            "If the answer is not contained, respond with 'The information is not available in the provided context.'\n\n"
+            "You are an expert assistant. Use only the context below to answer the question as best as you can.\n"
+            "Please combine information from all the context chunks below to answer comprehensively.\n"
+            "If the answer is not contained or unclear, respond with 'The information is not available in the provided context.'\n\n"
             f"Context:\n{context_text}\n\n"
             f"Question: {query}\nAnswer:"
         )
+
 
 
 
