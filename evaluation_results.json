@@ -1,0 +1,55 @@
+[
+    {
+        "query": "What are the main components of the system?",
+        "answer": "1. Document Processing: Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage. 2. Vector Storage: Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+        "retrieved_chunks": [
+            "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval."
+        ],
+        "context_used": "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+        "time_taken_sec": 11.44
+    },
+    {
+        "query": "How does the document processing work?",
+        "answer": "Document Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents.",
+        "retrieved_chunks": [
+            "Comparison: Document Processing  vs Query Processing\nDocument Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents.\nQuery Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context.",
+            "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+            "3. Query Processing:\n   When a user submits a query, the system generates an embedding for the query and retrieves the top-k relevant document chunks.\n4. Response Generation:\n   The generation model constructs a natural language response using the retrieved context."
+        ],
+        "context_used": "Comparison: Document Processing  vs Query Processing\nDocument Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents.\nQuery Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context.",
+        "time_taken_sec": 9.16
+    },
+    {
+        "query": "What's the difference between document processing and query processing?",
+        "answer": "Document Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents. Query Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context.",
+        "retrieved_chunks": [
+            "Comparison: Document Processing  vs Query Processing\nDocument Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents.\nQuery Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context.",
+            "3. Query Processing:\n   When a user submits a query, the system generates an embedding for the query and retrieves the top-k relevant document chunks.\n4. Response Generation:\n   The generation model constructs a natural language response using the retrieved context.",
+            "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval."
+        ],
+        "context_used": "Comparison: Document Processing  vs Query Processing\nDocument Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents.\nQuery Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context.",
+        "time_taken_sec": 9.34
+    },
+    {
+        "query": "Explain quantum teleportation in this system context.",
+        "answer": "The information is not available in the provided context.",
+        "retrieved_chunks": [
+            "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+            "3. Query Processing:\n   When a user submits a query, the system generates an embedding for the query and retrieves the top-k relevant document chunks.\n4. Response Generation:\n   The generation model constructs a natural language response using the retrieved context.",
+            "RAG System Technical Documentation\n\nOverview:\nThe Retrieval-Augmented Generation (RAG) system enhances response quality by combining document retrieval with language generation. It allows the model to access external knowledge at inference time."
+        ],
+        "context_used": "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+        "time_taken_sec": 2.68
+    },
+    {
+        "query": "How does the system load documents, store embeddings, and answer queries step by step?",
+        "answer": "Document Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents. Query Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context.",
+        "retrieved_chunks": [
+            "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+            "3. Query Processing:\n   When a user submits a query, the system generates an embedding for the query and retrieves the top-k relevant document chunks.\n4. Response Generation:\n   The generation model constructs a natural language response using the retrieved context.",
+            "Comparison: Document Processing  vs Query Processing\nDocument Processing is offline and prepares the knowledge base ahead of time. It includes chunking and vectorizing documents.\nQuery Processing is online and happens at runtime. It deals with embedding the query and retrieving relevant context."
+        ],
+        "context_used": "Components:\n1. Document Processing:\n   Responsible for loading raw text documents, splitting them into manageable chunks, and generating embeddings for storage.\n2. Vector Storage:\n   Embeddings are stored in a vector database (e.g., Qdrant) which enables similarity-based retrieval.",
+        "time_taken_sec": 11.07
+    }
+]

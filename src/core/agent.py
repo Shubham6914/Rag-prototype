@@ -32,15 +32,21 @@ class RAGAgent:
             logger.error(f"Model initialization failed: {e}")
             raise
 
+    # In RAGAgent._format_prompt()
     def _format_prompt(self, query: str, context: List[Dict]) -> str:
-        context_text = "\n\n---\n\n".join([f"Chunk {i+1}:\n{doc['text'].strip()}" for i, doc in enumerate(context)])
-        return (
-            "You are an expert assistant. Use only the context below to answer the question as best as you can.\n"
-            "Please combine information from all the context chunks below to answer comprehensively.\n"
-            "If the answer is not contained or unclear, respond with 'The information is not available in the provided context.'\n\n"
-            f"Context:\n{context_text}\n\n"
-            f"Question: {query}\nAnswer:"
+        context_text = "\n\n---\n\n".join(
+            [f"Chunk {i+1}:\n{doc['text'].strip()}" for i, doc in enumerate(context)]
         )
+        return (
+            "You are a helpful assistant. Use ONLY the context below to answer.\n"
+            "Combine all the context chunks into a single, detailed, step-by-step response.\n"
+            "If the answer is not in the context, explicitly say: 'The information is not available in the provided context.'\n\n"
+            f"Context:\n{context_text}\n\n"
+            f"Question: {query}\n\n"
+            "Step-by-step Answer:"
+        )
+
+
 
 
 
@@ -67,9 +73,10 @@ class RAGAgent:
             logger.debug(f"Agent Generated Agent Response: {response.strip()}")
 
             return {
-                "answer": response.strip(),
-                "context_used": context_used
-            }
+            "answer": response.strip(),
+            "retrieved_chunks": [doc['text'] for doc in context],  # full context for debugging
+            "context_used": context_used
+        }
 
         except Exception as e:
             logger.error(f"Error processing query: {e}")

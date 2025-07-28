@@ -66,38 +66,38 @@ class VectorStore:
             logger.error(f"Failed to store documents: {str(e)}")
             raise
 
-    def retrieve(self, query_embedding, limit=3, metadata_filter=None):
+    # In VectorStore.retrieve()
+    def retrieve(self, query_embedding, limit=3, metadata_filter=None, score_threshold=0.3):
         try:
-            search_kwargs = {
-                "collection_name": self.collection_name,
-                "limit": limit,
-            }
-
-            # Convert metadata_filter to Qdrant Filter if provided
-            if metadata_filter:
-                search_kwargs["query_filter"] = Filter(
-                    must=[
-                        FieldCondition(
-                            key=key,
-                            match=MatchValue(value=value)
-                        ) for key, value in metadata_filter.items()
-                    ]
-                )
-
             results = self.client.search(
+                collection_name=self.collection_name,
                 query_vector=query_embedding,
-                **search_kwargs
+                limit=limit * 2,  # Fetch more initially
+                with_payload=True
             )
+
+            filtered = [hit for hit in results if hit.score >= score_threshold]
+            if not filtered:
+                logger.warning("No results above threshold, falling back to top results")
+                filtered = results[:limit]
+
+
+            seen, deduped = set(), []
+            for hit in filtered:
+                payload = hit.payload or {}  # Ensure payload is a dict
+                text = payload.get("text", "").strip()
+                if text and text not in seen:
+                    deduped.append(hit)
+                    seen.add(text)
 
             return [
                 {
-                    "text": hit.payload.get("text", "") if hit.payload else "",
-                    "metadata": hit.payload if hit.payload else {},
+                    "text": (hit.payload or {}).get("text", ""),
+                    "metadata": hit.payload or {},
                     "score": hit.score,
                 }
-                for hit in results
+                for hit in deduped[:limit]
             ]
-
         except Exception as e:
             logger.error(f"Error retrieving documents: {e}")
             return []

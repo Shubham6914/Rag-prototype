@@ -1,13 +1,16 @@
 from pathlib import Path
+import time
 from loguru import logger
+
 from src.utils.logging import setup_logging
 from src.utils.document_loader import DocumentLoader
 from src.utils.chunking import TextChunker
 from src.core.embeddings import EmbeddingGenerator
 from src.core.retriever import VectorStore
 from src.core.agent import RAGAgent
-import time
+from typing import Optional
 
+# Test scenarios for evaluation
 TEST_SCENARIOS = [
     {
         "type": "Factual",
@@ -23,17 +26,29 @@ TEST_SCENARIOS = [
         "type": "Comparative",
         "query": "What's the difference between document processing and query processing?",
         "expected": "Should compare these two components"
-    }
+    },
+    {
+        "type": "Edge Case",
+        "query": "Explain quantum teleportation in this system context.",
+        "expected": "Should gracefully handle irrelevant query"
+    },
+    {
+        "type": "Complex",
+        "query": "How does the system load documents, store embeddings, and answer queries step by step?",
+        "expected": "Should provide a multi-step reasoning answer"
+    },
 ]
 
-def setup_demo_environment():
+
+def setup_demo_environment() -> Optional[Path]:
+    """Locate a sample document for testing"""
     try:
         sample_corpus = Path("sample_corpus")
-        text_files = list(sample_corpus.glob("*.txt")) + list(sample_corpus.glob("*.md"))
+        text_files = list(sample_corpus.glob("*.txt")) + list(sample_corpus.glob("*.md")) + list(sample_corpus.glob("*.pdf"))
 
         if not text_files:
-            logger.error("No text files found in sample_corpus directory")
-            return None
+            logger.error("No documents found in sample_corpus directory")
+            return None  # Now valid
 
         logger.info(f"Found {len(text_files)} documents in sample_corpus")
         for file in text_files:
@@ -47,10 +62,12 @@ def setup_demo_environment():
         logger.error(f"Demo setup failed: {e}")
         return None
 
-def check_document_processed(vector_store, file_path: Path) -> bool:
+
+def check_document_processed(vector_store: VectorStore, file_path: Path) -> bool:
+    """Check if a document has already been indexed (via metadata filter)"""
     try:
         results = vector_store.retrieve(
-            query_embedding=[0.0] * 384,  # embedding dimension should match your model, adjust if needed
+            query_embedding=[0.0] * 384,  # Dummy embedding just to trigger metadata filter
             limit=1,
             metadata_filter={"source": str(file_path)}
         )
@@ -59,17 +76,19 @@ def check_document_processed(vector_store, file_path: Path) -> bool:
         logger.error(f"Error checking document status: {e}")
         return False
 
+
 def process_documents(doc_loader, chunker, embedding_generator, vector_store, file_path: Path):
+    """Load, chunk, embed, and store document into Qdrant"""
     try:
         if check_document_processed(vector_store, file_path):
-            logger.info(f"Document {file_path} already processed, skipping...")
+            logger.info(f"Document {file_path} already processed, skipping ingestion.")
             return True
 
         logger.info(f"Processing new document: {file_path}")
-
         content = doc_loader.load_document(file_path)
         chunks = chunker.chunk_text(content)
         logger.info(f"Chunked text into {len(chunks)} chunks")
+
         for i, chunk in enumerate(chunks[:2]):
             logger.debug(f"Chunk {i+1}: {chunk[:100]}...")
 
@@ -80,6 +99,7 @@ def process_documents(doc_loader, chunker, embedding_generator, vector_store, fi
             embeddings=embeddings,
             metadata=[{"source": str(file_path)} for _ in chunks]
         )
+
         logger.info(f"Successfully processed document: {file_path}")
         return True
 
@@ -87,9 +107,11 @@ def process_documents(doc_loader, chunker, embedding_generator, vector_store, fi
         logger.error(f"Error processing document {file_path}: {e}")
         return False
 
+
 def run_demo():
+    """Run the full demo with ingestion and evaluation tests"""
     setup_logging()
-    logger.info("Starting RAG System Demo")
+    logger.info("Starting RAG Prototype Demo")
 
     try:
         print("\n=== Initializing Components ===")
@@ -98,7 +120,8 @@ def run_demo():
         embedding_generator = EmbeddingGenerator()
         vector_store = VectorStore(collection_name="test_collection")
 
-        rag_agent = RAGAgent(vector_store, embedding_generator)
+        # Use flan-t5-base for faster inference (flan-t5-large is very slow on CPU)
+        rag_agent = RAGAgent(vector_store, embedding_generator, model_name="google/flan-t5-base")
 
         demo_file = setup_demo_environment()
         if not demo_file:
@@ -110,43 +133,42 @@ def run_demo():
         else:
             raise Exception("Document processing failed")
 
-        print("\n=== Document Processing Complete ===")
-        print("\n=== Running Test Scenarios ===")
-        print("\n" + "="*50)
+        print("\n=== Running Evaluation Scenarios ===")
+        print("\n" + "=" * 50)
         print("RAG System Evaluation Results")
-        print("="*50)
+        print("=" * 50)
 
         for scenario in TEST_SCENARIOS:
             print(f"\nTest Type: {scenario['type']}")
             print(f"Query: {scenario['query']}")
-            print("-"*30)
+            print("-" * 30)
 
+            start_time = time.time()
             response = rag_agent.process_query(scenario['query'])
+            elapsed = time.time() - start_time
 
-            # Instead of re-calling _format_prompt and generator, use response directly:
-            print("Agent Response:")
-            print(response.get("answer", "No answer returned.").strip())
+            logger.info(f"Query processed in {elapsed:.2f}s")
+            logger.info(f"Agent Response: {response}")
 
-            print(f"\nContext Used:")
-            if response.get("context_used"):
-                print(response["context_used"][:200] + "...")
-            else:
-                print("No context used.")
+            print(f"Agent Response:\n{response.get('answer', 'No response')}")
+            print(f"\nContext Used:\n{response.get('context_used', 'Not available')}")
 
-            print("="*50)
+            print(f"\nResponse Time: {elapsed:.2f}s")
+            print("=" * 50)
             time.sleep(1)
 
         print("\nDemo Summary:")
         print("✓ Document Processing")
-        print("✓ Vector Storage")
+        print("✓ Vector Storage (Qdrant)")
         print("✓ Query Processing")
-        print("✓ Response Generation")
+        print("✓ Answer Generation")
         logger.info("Demo completed successfully")
 
     except Exception as e:
         logger.error(f"Demo failed: {e}")
         print(f"\nError during demo: {e}")
         raise
+
 
 if __name__ == "__main__":
     run_demo()
