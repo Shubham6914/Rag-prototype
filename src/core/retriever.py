@@ -2,7 +2,7 @@ from typing import List, Dict, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from loguru import logger
-
+from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 class VectorStore:
     def __init__(
         self,
@@ -66,30 +66,38 @@ class VectorStore:
             logger.error(f"Failed to store documents: {str(e)}")
             raise
 
-    def retrieve(
-        self,
-        query_embedding: List[float],
-        limit: int = 3
-    ) -> List[Dict]:
-        """Retrieve most similar documents"""
+    def retrieve(self, query_embedding, limit=3, metadata_filter=None):
         try:
+            search_kwargs = {
+                "collection_name": self.collection_name,
+                "limit": limit,
+            }
+
+            # Convert metadata_filter to Qdrant Filter if provided
+            if metadata_filter:
+                search_kwargs["query_filter"] = Filter(
+                    must=[
+                        FieldCondition(
+                            key=key,
+                            match=MatchValue(value=value)
+                        ) for key, value in metadata_filter.items()
+                    ]
+                )
+
             results = self.client.search(
-                collection_name=self.collection_name,
                 query_vector=query_embedding,
-                limit=limit
+                **search_kwargs
             )
-            
-            retrieved_docs = [
+
+            return [
                 {
-                    "text": hit.payload["text"] if hit.payload and "text" in hit.payload else None,
+                    "text": hit.payload.get("text", "") if hit.payload else "",
+                    "metadata": hit.payload if hit.payload else {},
                     "score": hit.score,
-                    **({k: v for k, v in hit.payload.items() if k != "text"} if hit.payload else {})
                 }
                 for hit in results
             ]
-            
-            logger.debug(f"Retrieved {len(retrieved_docs)} documents")
-            return retrieved_docs
+
         except Exception as e:
-            logger.error(f"Retrieval failed: {str(e)}")
-            raise
+            logger.error(f"Error retrieving documents: {e}")
+            return []

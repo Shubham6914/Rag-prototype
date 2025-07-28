@@ -64,9 +64,10 @@ def test_complete_pipeline():
 if __name__ == "__main__":
     # Create a sample test.txt file if it doesn't exist
     # Modified test content in test_pipeline.py
-    test_content = """This is a test document for our RAG system.
-    It contains multiple sentences that will be processed through our pipeline.
-    We will use this to verify our document loading, chunking, embedding, and retrieval capabilities."""
+    test_content = """India is a country in South Asia known for its rich history and cultural diversity.
+    The capital city of India is New Delhi, which serves as the center of government.
+    The Prime Minister of India plays a key role in national leadership and policymaking."""
+
     
     # Ensure sample_corpus directory exists
     Path("sample_corpus").mkdir(exist_ok=True)
